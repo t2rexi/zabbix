@@ -1,0 +1,276 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    -
+      uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    -
+      uuid: 31eb771e42954bb6a5389145b3954f74
+      template: 'D-Link DAP-2590 by SNMP'
+      name: 'D-Link DAP-2590 by SNMP'
+      description: by t2rex
+      groups:
+        -
+          name: 'Templates/Network devices'
+      items:
+        -
+          uuid: d798e65dae5f4d1397527c93f552eae6
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: 'icmppingloss[{HOST.IP}]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: f183d0fb4d4f468a9803e6783af593ca
+              expression: 'min(/D-Link DAP-2590 by SNMP/icmppingloss[{HOST.IP}],5m)>{$ICMP_LOSS_WARN} and min(/D-Link DAP-2590 by SNMP/icmppingloss[{HOST.IP}],5m)<100'
+              name: 'High ICMP ping loss'
+              opdata: 'Loss: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: 'max(/D-Link DAP-2590 by SNMP/icmpping[{HOST.IP}],#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 576d90f17d7b47d9a1e04de62819caa3
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: 'icmppingsec[{HOST.IP}]'
+          history: 1w
+          value_type: FLOAT
+          units: s
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: bef3b60d65884db3aec8f744b46073d2
+              expression: 'avg(/D-Link DAP-2590 by SNMP/icmppingsec[{HOST.IP}],5m)>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'High ICMP ping loss'
+                  expression: 'min(/D-Link DAP-2590 by SNMP/icmppingloss[{HOST.IP}],5m)>{$ICMP_LOSS_WARN} and min(/D-Link DAP-2590 by SNMP/icmppingloss[{HOST.IP}],5m)<100'
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: 'max(/D-Link DAP-2590 by SNMP/icmpping[{HOST.IP}],#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 2872462ccb6b4ed9b15fd04562ead738
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: 'icmpping[{HOST.IP}]'
+          history: 1w
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 02396798c66b4e02aa22d13d0eb8e110
+              expression: 'max(/D-Link DAP-2590 by SNMP/icmpping[{HOST.IP}],#3)=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+        -
+          uuid: a0712168589c475394b44370c5a5a005
+          name: 'Interface Ethernet: Bits received'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.2.1.1.1.1.5.1
+          key: 'net.if.in[ifHCInOctets.1]'
+          units: bps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+        -
+          uuid: 5de17fa072094a48850739f517eb9dd7
+          name: 'Interface Ethernet: Bits sent'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.2.1.1.1.1.2.1
+          key: 'net.if.out[ifHCOutOctets.1]'
+          units: bps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+        -
+          uuid: b7921dd64c6745c0bf10988d0774c421
+          name: 'Interface Wireless: Bits received'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.2.2.1.1.1.24.1
+          key: 'net.wif.in[ifHCWInOctets.1]'
+          units: bps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+        -
+          uuid: 5702cffdb6fc4478b2565a9f65f709d6
+          name: 'Interface Wireless: Bits sent'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.2.2.1.1.1.20.1
+          key: 'net.wif.out[ifHCWOutOctets.1]'
+          units: bps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+        -
+          uuid: 026a834b1fa345709fcaba8f084fbab4
+          name: 'CPU utilization'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.1.3.0
+          key: 'system.cpu.util[agentCPUutilizationIn1min.0]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: DLINK-AGENT-MIB
+            The unit of time is 1 minute. The value will be between 0% (idle) and 100%(very busy).
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 80808644228c4901bfc5fc628290ae60
+          name: 'Memory utilization'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.171.10.37.36.5.1.4.0
+          key: 'system.mem.util[agentMEMutilizationIn1min.0]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: DLINK-AGENT-MIB
+            The unit of time is 1 minute. The value will be between 0% (idle) and 100%(very busy).
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 13c870bf1e434d67b7c8a5ca3be1d32b
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: a074555e0061429396c851ab9ddb1794
+          name: 'SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 12228786f8154f77b020748fcd2698a9
+              expression: 'max(/D-Link DAP-2590 by SNMP/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              opdata: 'Current state: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'SNMP is not available for polling. Please check device connectivity and SNMP settings.'
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: 'max(/D-Link DAP-2590 by SNMP/icmpping[{HOST.IP}],#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+  graphs:
+    -
+      uuid: 611411bbc0c14974a356c4eacc17b26d
+      name: 'CPU utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'D-Link DAP-2590 by SNMP'
+            key: 'system.cpu.util[agentCPUutilizationIn1min.0]'
